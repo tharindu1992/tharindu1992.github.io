@@ -9,7 +9,13 @@
 <body>
   <header>
     <h1>4-Week Mesocycle Tracker</h1>
-    <p>Mark each exercise as done. Your progress will be saved automatically.</p>
+    <p>Mark each exercise as done. Add weights and reps. Your progress will be saved automatically.</p>
+    
+    <div class="export-import-buttons">
+      <button onclick="exportWorkoutData()">Export Progress</button>
+      <button onclick="document.getElementById('importFile').click()">Import Progress</button>
+      <input type="file" id="importFile" accept=".json" onchange="importWorkoutData(this.files[0])">
+    </div>
   </header>
   <main>
 
