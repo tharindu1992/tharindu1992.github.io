@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>12-Week Lean Cut Tracker</title>
+  <style>
+    :root{
+      --bg:#0b1020;--panel:#111827;--panel2:#0f172a;--text:#f8fafc;--muted:#94a3b8;
+      --line:#243247;--accent:#22c55e;--accent2:#38bdf8;--warn:#f59e0b;--danger:#ef4444;
+      --shadow:0 12px 30px rgba(0,0,0,.25);--radius:18px
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(180deg,#08101f 0%,#0b1020 100%);color:var(--text)}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:1200px;margin:auto;padding:18px}
+    .hero{display:grid;grid-template-columns:1.4fr .9fr;gap:16px;margin-bottom:16px}
+    .card{background:rgba(17,24,39,.92);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .hero-main{padding:24px}
+    .eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.14em;color:#86efac;font-weight:700}
+    h1{font-size:clamp(1.9rem,4vw,3.2rem);margin:.35rem 0 .5rem;line-height:1.05}
+    h2{margin:.2rem 0 1rem;font-size:1.35rem}
+    h3{margin:0 0 .7rem;font-size:1rem}
+    p{color:#cbd5e1;line-height:1.6}
+    .hero-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:16px}
+    .stat{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px}
+    .stat b{font-size:1.45rem;display:block;margin-top:4px}
+    .stat span{font-size:.78rem;color:var(--muted)}
+    .top-tabs,.subtabs{display:flex;gap:8px;overflow:auto;padding:8px;background:rgba(15,23,42,.85);border:1px solid var(--line);border-radius:16px;position:sticky;top:8px;z-index:20;backdrop-filter:blur(10px)}
+    .tab-btn,.subtab-btn{border:0;border-radius:12px;padding:10px 14px;background:transparent;color:#cbd5e1;white-space:nowrap;font-weight:700}
+    .tab-btn.active,.subtab-btn.active{background:var(--accent);color:#04110a}
+    .section{display:none;margin-top:16px}
+    .section.active{display:block}
+    .grid{display:grid;gap:16px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .pad{padding:18px}
+    .kpi{display:flex;justify-content:space-between;align-items:end;gap:12px}
+    .kpi strong{font-size:1.6rem}
+    .muted{color:var(--muted)}
+    .pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#172033;border:1px solid var(--line);font-size:.78rem;color:#cbd5e1}
+    .progressbar{height:11px;background:#0b1220;border-radius:999px;overflow:hidden;border:1px solid var(--line);margin-top:10px}
+    .progressbar > div{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0}
+    .form-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    label{display:block;font-size:.78rem;color:#cbd5e1;margin-bottom:6px}
+    input,select,textarea{width:100%;background:#0a1220;color:var(--text);border:1px solid #334155;border-radius:10px;padding:10px 11px;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+    .btn{border:0;border-radius:10px;padding:10px 13px;font-weight:800}
+    .btn.primary{background:var(--accent);color:#04110a}
+    .btn.secondary{background:#172033;color:#e2e8f0;border:1px solid var(--line)}
+    .btn.danger{background:#3b1114;color:#fecaca;border:1px solid #7f1d1d}
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    table{width:100%;border-collapse:collapse}
+    th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+    th{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    td{font-size:.92rem}
+    .scroll{overflow:auto}
+    .workout-day{display:none}
+    .workout-day.active{display:block}
+    .workout-table input{min-width:72px}
+    .exercise-name{font-weight:800}
+    .exercise-note{display:block;color:var(--muted);font-size:.75rem;margin-top:3px}
+    .meal-day{padding:14px 0;border-bottom:1px solid var(--line)}
+    .meal-day:last-child{border-bottom:0}
+    .meal-title{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .meal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
+    .meal{background:#0f172a;border:1px solid var(--line);border-radius:12px;padding:12px}
+    .meal b{display:block;margin-bottom:6px}
+    .checklist{display:grid;gap:9px}
+    .check{display:flex;align-items:flex-start;gap:9px;padding:10px;border-radius:12px;background:#0f172a;border:1px solid var(--line)}
+    .check input{width:auto;margin-top:3px}
+    .timeline{display:grid;gap:10px}
+    .time-item{display:grid;grid-template-columns:90px 1fr;gap:12px;padding:12px;border-left:3px solid #334155;background:#0f172a;border-radius:10px}
+    .time-item .time{font-weight:800;color:#86efac}
+    .chart-wrap{height:260px;position:relative}
+    canvas{width:100%;height:100%;display:block}
+    .small{font-size:.8rem}
+    .notice{padding:12px 14px;border-radius:12px;background:#1c1917;border:1px solid #78350f;color:#fde68a}
+    .success{padding:12px 14px;border-radius:12px;background:#052e16;border:1px solid #166534;color:#bbf7d0}
+    .footer{color:#64748b;text-align:center;font-size:.78rem;padding:24px 0}
+    @media(max-width:820px){
+      .hero,.grid.two,.grid.three,.meal-grid{grid-template-columns:1fr}
+      .form-row{grid-template-columns:repeat(2,1fr)}
+      .top-tabs{top:4px}
+    }
+    @media(max-width:520px){
+      .app{padding:10px}
+      .hero-main{padding:18px}
+      .hero-stats{grid-template-columns:repeat(2,1fr);padding:12px}
+      .form-row{grid-template-columns:1fr}
+      th,td{padding:8px 6px}
+      .time-item{grid-template-columns:72px 1fr}
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <section class="hero">
+    <div class="card hero-main">
+      <div class="eyebrow">12-week lean cut</div>
+      <h1>Lean Cut Tracker</h1>
+      <p>Built around a 34-year-old male, 178 cm, starting at 83.5 kg, training at home with a rack, barbell, cables, pull-up bar and treadmill. Goal: get leaner, reduce waist/love handles, preserve muscle and work toward visible abs.</p>
+      <div class="actions">
+        <span class="pill">≈ 2,100 kcal/day</span>
+        <span class="pill">175–185 g protein</span>
+        <span class="pill">4 lifting days</span>
+        <span class="pill">9–10k step target</span>
+      </div>
+    </div>
+    <div class="card hero-stats">
+      <div class="stat"><span>Start weight</span><b>83.5 kg</b></div>
+      <div class="stat"><span>Primary target</span><b>75 kg</b></div>
+      <div class="stat"><span>Cut length</span><b>12 weeks</b></div>
+      <div class="stat"><span>Weekly loss aim</span><b>0.5–0.8 kg</b></div>
+    </div>
+  </section>
+
+  <nav class="top-tabs" aria-label="Main sections">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="workout">Workout</button>
+    <button class="tab-btn" data-tab="meals">Meal Plan</button>
+    <button class="tab-btn" data-tab="routine">Daily Routine</button>
+    <button class="tab-btn" data-tab="groceries">Groceries</button>
+    <button class="tab-btn" data-tab="settings">Data</button>
+  </nav>
+
+  <main>
+    <section id="dashboard" class="section active">
+      <div class="grid three">
+        <div class="card pad">
+          <div class="kpi"><div><div class="muted small">Latest body weight</div><strong id="latestWeight">83.5 kg</strong></div><span class="pill" id="weightChange">Start</span></div>
+          <div class="progressbar"><div id="weightProgress"></div></div>
+          <div class="small muted" style="margin-top:8px">Progress toward 75 kg</div>
+        </div>
+        <div class="card pad">
+          <div class="kpi"><div><div class="muted small">Latest waist</div><strong id="latestWaist">—</strong></div><span class="pill">Weekly</span></div>
+          <p class="small">Measure relaxed at the belly button, ideally in the morning under similar conditions.</p>
+        </div>
+        <div class="card pad">
+          <div class="kpi"><div><div class="muted small">Today's step target</div><strong id="stepTargetText">6,000</strong></div><span class="pill" id="weekPill">Week 1</span></div>
+          <p class="small">Week 1: 6k → Week 2: 7k → Week 3: 8k → Week 4+: 9–10k.</p>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:16px">
+        <div class="card pad">
+          <h2>Log body progress</h2>
+          <form id="progressForm">
+            <div class="form-row">
+              <div><label for="progressDate">Date</label><input id="progressDate" type="date" required></div>
+              <div><label for="bodyWeight">Weight (kg)</label><input id="bodyWeight" type="number" step="0.1" min="40" max="200" required></div>
+              <div><label for="waist">Waist (cm)</label><input id="waist" type="number" step="0.1" min="50" max="180"></div>
+              <div><label for="steps">Steps</label><input id="steps" type="number" step="100" min="0" max="100000"></div>
+            </div>
+            <div class="actions">
+              <button class="btn primary" type="submit">Save entry</button>
+            </div>
+          </form>
+          <div class="scroll" style="margin-top:14px">
+            <table>
+              <thead><tr><th>Date</th><th>Weight</th><th>Waist</th><th>Steps</th><th></th></tr></thead>
+              <tbody id="progressRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Weight trend</h2>
+          <div class="chart-wrap"><canvas id="weightChart" aria-label="Weight trend chart"></canvas></div>
+          <div class="small muted">Use the 7-day trend, not single-day fluctuations, to decide whether the plan needs adjusting.</div>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:16px">
+        <div class="card pad">
+          <h2>Daily targets</h2>
+          <div class="checklist">
+            <label class="check"><input type="checkbox" data-daily="calories"> <span><b>Calories</b><br><span class="muted small">Aim ≈ 2,100 kcal ±100</span></span></label>
+            <label class="check"><input type="checkbox" data-daily="protein"> <span><b>Protein</b><br><span class="muted small">175–185 g</span></span></label>
+            <label class="check"><input type="checkbox" data-daily="steps"> <span><b>Steps</b><br><span class="muted small">Follow weekly progression toward 9–10k</span></span></label>
+            <label class="check"><input type="checkbox" data-daily="water"> <span><b>Fluids</b><br><span class="muted small">2–3 L/day</span></span></label>
+            <label class="check"><input type="checkbox" data-daily="sleep"> <span><b>Sleep</b><br><span class="muted small">≈ 8 hours</span></span></label>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Adjustment rules</h2>
+          <p><b>0.5–0.8 kg/week:</b> keep everything unchanged.</p>
+          <p><b>&lt;0.3–0.4 kg/week for 2 weeks:</b> verify tracking and steps first, then reduce ~150 kcal/day or increase movement.</p>
+          <p><b>&gt;0.9 kg/week consistently + poor recovery:</b> add ~100–150 kcal/day.</p>
+          <div class="notice small">Back issue: avoid heavy deadlifts/squats and any exercise that provokes pain. Use pain-free ranges and seek clinician/physio guidance if symptoms worsen or radiate.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="workout" class="section">
+      <div class="card pad">
+        <h2>Workout tracker</h2>
+        <p class="small muted">Enter the weight you used and actual reps. Your entries are saved in this browser. When you hit the top of the rep range across all sets with good form, add a small amount of weight next time.</p>
+        <div class="subtabs" id="workoutTabs" aria-label="Workout days">
+          <button class="subtab-btn active" data-day="mon">Mon</button>
+          <button class="subtab-btn" data-day="tue">Tue</button>
+          <button class="subtab-btn" data-day="wed">Wed</button>
+          <button class="subtab-btn" data-day="thu">Thu</button>
+          <button class="subtab-btn" data-day="fri">Fri</button>
+          <button class="subtab-btn" data-day="sat">Sat</button>
+          <button class="subtab-btn" data-day="sun">Sun</button>
+        </div>
+        <div id="workoutDays" style="margin-top:14px"></div>
+      </div>
+    </section>
+
+    <section id="meals" class="section">
+      <div class="grid two">
+        <div class="card pad">
+          <h2>Nutrition targets</h2>
+          <table>
+            <tbody>
+              <tr><td>Calories</td><td><b>≈ 2,100 kcal/day</b></td></tr>
+              <tr><td>Protein</td><td><b>175–185 g/day</b></td></tr>
+              <tr><td>Fat</td><td><b>60–70 g/day</b></td></tr>
+              <tr><td>Carbs</td><td><b>Flexible remainder</b></td></tr>
+              <tr><td>Fibre</td><td><b>25–35 g/day</b></td></tr>
+            </tbody>
+          </table>
+          <p class="small muted">Keep protein fixed, keep vegetables/fibre adequate, and reduce rice/potato portions when genuinely full. Meal calories are estimates; use the nutrition labels for the exact products you buy.</p>
+        </div>
+        <div class="card pad">
+          <h2>Weight convention</h2>
+          <p><b>Meat:</b> raw trimmed weight.</p>
+          <p><b>Rice:</b> dry weight before cooking.</p>
+          <p><b>Potatoes:</b> raw weight. Frozen wedges: frozen weight from the bag.</p>
+          <p><b>Woolworths rotisserie chicken:</b> weigh the edible skinless breast/thigh meat after removing skin, wings and stuffing.</p>
+        </div>
+      </div>
+
+      <div class="card pad" style="margin-top:16px">
+        <h2>7-day meal plan</h2>
+        <div id="mealPlan"></div>
+      </div>
+
+      <div class="card pad" style="margin-top:16px">
+        <h2>Easy substitutions</h2>
+        <table>
+          <tbody>
+            <tr><td>250 g raw chicken breast</td><td>≈ 200 g cooked skinless rotisserie chicken meat</td></tr>
+            <tr><td>250 g raw lean rump steak</td><td>Use trimmed rump / sirloin / eye fillet</td></tr>
+            <tr><td>300 g plain potato</td><td>≈ 190–200 g frozen Woolworths potato wedges, air-fried without extra oil</td></tr>
+            <tr><td>Vegetables you dislike</td><td>Use capsicum, cucumber, moderate carrots + fruit, potatoes with skin, oats, high-fibre wraps and chia to reach fibre</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="routine" class="section">
+      <div class="grid two">
+        <div class="card pad">
+          <h2>Weekday routine</h2>
+          <div class="timeline">
+            <div class="time-item"><div class="time">08:00</div><div><b>Wake</b><br><span class="muted small">Water, coffee/tea if wanted.</span></div></div>
+            <div class="time-item"><div class="time">08:15</div><div><b>10–15 min walk</b><br><span class="muted small">Break the bed → desk pattern.</span></div></div>
+            <div class="time-item"><div class="time">09:00–12:00</div><div><b>Work</b><br><span class="muted small">Stand/move 3–5 min every 50–60 min.</span></div></div>
+            <div class="time-item"><div class="time">12:00</div><div><b>Meal 1</b><br><span class="muted small">Protein-heavy meal, then 10 min walk.</span></div></div>
+            <div class="time-item"><div class="time">16:00</div><div><b>Protein snack</b><br><span class="muted small">Whey + fruit; useful before training.</span></div></div>
+            <div class="time-item"><div class="time">17:00–18:30</div><div><b>Training window</b><br><span class="muted small">45–70 min weights + scheduled cardio.</span></div></div>
+            <div class="time-item"><div class="time">19:00</div><div><b>Dinner</b><br><span class="muted small">Protein + measured carb + preferred vegetables/fibre.</span></div></div>
+            <div class="time-item"><div class="time">19:30</div><div><b>10–15 min walk</b><br><span class="muted small">Helps accumulate daily steps.</span></div></div>
+            <div class="time-item"><div class="time">20:00</div><div><b>Eating window closes</b><br><span class="muted small">Water/zero-calorie drinks are fine.</span></div></div>
+            <div class="time-item"><div class="time">22:30</div><div><b>Wind down</b><br><span class="muted small">Reduce stimulation, prep for sleep.</span></div></div>
+            <div class="time-item"><div class="time">23:00</div><div><b>Sleep</b><br><span class="muted small">Target ≈ 8 hours.</span></div></div>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Step progression</h2>
+          <table>
+            <tbody>
+              <tr><td>Week 1</td><td><b>6,000/day</b></td></tr>
+              <tr><td>Week 2</td><td><b>7,000/day</b></td></tr>
+              <tr><td>Week 3</td><td><b>8,000/day</b></td></tr>
+              <tr><td>Week 4+</td><td><b>9,000–10,000/day</b></td></tr>
+            </tbody>
+          </table>
+          <h3 style="margin-top:20px">Easy WFH movement</h3>
+          <div class="checklist">
+            <div class="check">Walk during phone calls.</div>
+            <div class="check">Take 5-minute movement breaks every hour.</div>
+            <div class="check">Use 10-minute walks after meals.</div>
+            <div class="check">Use treadmill walks to make up any step deficit.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="groceries" class="section">
+      <div class="grid three">
+        <div class="card pad">
+          <h2>Protein</h2>
+          <div class="checklist grocery-list" data-list="protein"></div>
+        </div>
+        <div class="card pad">
+          <h2>Carbs & fibre</h2>
+          <div class="checklist grocery-list" data-list="carbs"></div>
+        </div>
+        <div class="card pad">
+          <h2>Vegetables & extras</h2>
+          <div class="checklist grocery-list" data-list="veg"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="settings" class="section">
+      <div class="grid two">
+        <div class="card pad">
+          <h2>Backup your data</h2>
+          <p class="small muted">This static GitHub Pages site stores progress locally in your browser. Export a backup if you switch devices or clear browser data.</p>
+          <div class="actions">
+            <button class="btn primary" id="exportBtn" type="button">Export JSON</button>
+            <label class="btn secondary" style="display:inline-flex;align-items:center">Import JSON<input id="importFile" type="file" accept="application/json" style="display:none"></label>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2>Reset</h2>
+          <p class="small muted">Clears body logs, lift entries, grocery ticks and daily checkboxes from this browser.</p>
+          <button class="btn danger" id="resetBtn" type="button">Reset all local data</button>
+        </div>
+      </div>
+      <div class="success small" style="margin-top:16px">Deployment: save this file as <b>index.html</b>, commit it to a GitHub repository, then enable GitHub Pages from the repository settings. No build step or server is required.</div>
+    </section>
+  </main>
+
+  <div class="footer">Static single-file tracker. Nutrition numbers are planning estimates, not medical advice.</div>
+</div>
+
+<script>
+(() => {
+  const STORAGE_KEY = 'leanCutTracker_v1';
+  const START_WEIGHT = 83.5;
+  const TARGET_WEIGHT = 75;
+
+  const workoutPlan = {
+    mon: {
+      title:'Monday — Upper A', cardio:'Finish: 20 min easy/moderate treadmill walk.',
+      exercises:[
+        ['Barbell bench press','4','6–8','Keep 1–3 reps in reserve'],
+        ['Pull-ups','4','5–8','Add load only when bodyweight reps are solid'],
+        ['Seated cable row','3','8–12','Controlled squeeze'],
+        ['Cable chest fly','3','10–15','Pain-free shoulder range'],
+        ['Cable lateral raise','3','12–20','Prioritise shoulder width'],
+        ['Cable triceps pushdown','3','10–15',''],
+        ['Cable biceps curl','3','10–15','']
+      ]
+    },
+    tue: {
+      title:'Tuesday — Lower A + Core', cardio:'No required cardio beyond steps; easy walking is fine.',
+      exercises:[
+        ['Barbell hip thrust','4','8–12','Back-friendly setup; avoid excessive lumbar extension'],
+        ['Supported split squat','3','8–12 / leg','Use support and pain-free depth'],
+        ['Cable hamstring curl','3','10–15',''],
+        ['Cable leg extension','3','10–15',''],
+        ['Standing calf raise','3','12–20','Controlled reps'],
+        ['Pallof press','3','10–15 / side','Anti-rotation core work'],
+        ['Side plank','3','30–45 sec / side','']
+      ]
+    },
+    wed: {
+      title:'Wednesday — Cardio / Recovery', cardio:'35–45 min easy walk. Keep the pace conversational.',
+      exercises:[]
+    },
+    thu: {
+      title:'Thursday — Upper B', cardio:'Finish: 20–25 min treadmill walk.',
+      exercises:[
+        ['Incline barbell bench','4','6–10',''],
+        ['Chin-ups / pull-ups','4','6–10',''],
+        ['One-arm cable row','3','8–12',''],
+        ['Cable chest press / fly','3','10–15',''],
+        ['Cable lateral raise','4','12–20',''],
+        ['Straight-arm cable pulldown','3','10–15','Lat / V-taper emphasis'],
+        ['Overhead cable triceps extension','3','10–15',''],
+        ['Cable curl','3','10–15','']
+      ]
+    },
+    fri: {
+      title:'Friday — Lower B + Core', cardio:'Optional easy walk to complete step target.',
+      exercises:[
+        ['Hip thrust','3','10–12',''],
+        ['Reverse lunge / split squat','3','10 / leg','Use pain-free variation'],
+        ['Cable hamstring curl','4','10–15',''],
+        ['Cable glute kickback','3','12–15',''],
+        ['Calf raise','4','12–20',''],
+        ['Bird dog','3','8–10 / side','Slow controlled reps'],
+        ['Pallof press','3','10–15 / side','']
+      ]
+    },
+    sat: {
+      title:'Saturday — Long Walk', cardio:'40–60 min easy/moderate walk. This can be outdoors or treadmill.',
+      exercises:[]
+    },
+    sun: {
+      title:'Sunday — Rest / Optional Walk', cardio:'Rest day. Optional easy walk and mobility if it feels good.',
+      exercises:[]
+    }
+  };
+
+  const meals = [
+    {d:'Monday',m1:'250 g raw lean rump steak + 2 eggs + 300 g raw potato + capsicum/cucumber + 200 g Greek yogurt + berries',
+     snack:'40 g whey + banana',
+     m2:'250–270 g raw chicken breast + 65–70 g dry rice + preferred vegetables + 10 g olive oil + 150 g Greek yogurt'},
+    {d:'Tuesday',m1:'250 g raw chicken breast + 2 high-fibre wraps + capsicum/cucumber + 50 g avocado + 200 g Greek yogurt',
+     snack:'40 g whey + apple',
+     m2:'250 g raw lean beef mince + 300 g raw potato + carrots/capsicum + 1 egg + 150 g Greek yogurt'},
+    {d:'Wednesday',m1:'1 large tuna can + 2 eggs + 60–65 g dry rice + cucumber/capsicum + 200 g Greek yogurt + berries',
+     snack:'40 g whey + banana',
+     m2:'220–230 g raw salmon + 300 g raw potato + preferred vegetables + 150 g Greek yogurt'},
+    {d:'Thursday',m1:'250 g raw rump steak + 1 egg + 65–70 g dry rice + capsicum/cucumber + 200 g Greek yogurt',
+     snack:'40 g whey + banana',
+     m2:'250–270 g raw chicken breast + 300 g raw potato + preferred vegetables + 10 g olive oil + 150 g Greek yogurt'},
+    {d:'Friday',m1:'250 g raw chicken breast + 300 g raw potato + capsicum/cucumber + 2 eggs + 200 g Greek yogurt',
+     snack:'40 g whey + apple',
+     m2:'250 g raw lean beef mince + 65–70 g dry rice + capsicum/carrot + salsa + 150 g Greek yogurt'},
+    {d:'Saturday',m1:'250 g raw rump steak + 2 eggs + 300 g raw potato + preferred vegetables + 200 g Greek yogurt + fruit',
+     snack:'40 g whey + banana',
+     m2:'250 g raw chicken breast + 65–70 g dry rice + cucumber/capsicum + 50 g avocado + 150 g Greek yogurt'},
+    {d:'Sunday',m1:'250 g raw chicken breast + 60–65 g dry rice + 2 eggs + preferred vegetables + 200 g Greek yogurt',
+     snack:'40 g whey + fruit',
+     m2:'220–230 g raw salmon OR 250 g raw lean beef + 300 g raw potato + preferred vegetables + 150 g Greek yogurt'}
+  ];
+
+  const groceries = {
+    protein:[
+      'Chicken breast — ~1.8–2.0 kg raw',
+      'Lean rump / sirloin steak — ~1.0 kg',
+      'Lean beef mince — ~500–600 g',
+      'Salmon — ~450 g',
+      'Tuna — 1–2 large cans',
+      'Eggs — 12–15',
+      'Greek yogurt 0–2% — ~2.5 kg',
+      'Whey protein — ~300 g',
+      'Optional Woolworths rotisserie chicken — remove skin/wings/stuffing'
+    ],
+    carbs:[
+      'Rice — ~500–600 g dry',
+      'Potatoes — ~2–2.5 kg',
+      'Woolworths frozen potato wedges — optional substitute',
+      'High-fibre wraps — 1 packet',
+      'Bananas — 5–7',
+      'Apples / pears — 3–4',
+      'Berries — 500–750 g',
+      'Oats — optional fibre source',
+      'Chia seeds — optional for Greek yogurt'
+    ],
+    veg:[
+      'Capsicum / bell peppers',
+      'Cucumber',
+      'Carrots — moderate portions',
+      'Optional spinach / broccoli / zucchini if tolerated',
+      'Avocados — 2',
+      'Olive oil',
+      'Salsa / mustard / hot sauce',
+      'Garlic, paprika, herbs, pepper',
+      'Coke Zero / zero-calorie drinks — optional'
+    ]
+  };
+
+  let state = load();
+
+  function defaultState(){
+    return {progress:[], lifts:{}, daily:{}, groceries:{}, startDate:new Date().toISOString().slice(0,10)};
+  }
+  function load(){
+    try{
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      return parsed && typeof parsed === 'object' ? {...defaultState(),...parsed} : defaultState();
+    }catch(e){ return defaultState(); }
+  }
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    refreshDashboard();
+  }
+  function escapeHTML(s){
+    return String(s ?? '').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // Main tabs
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      if(btn.dataset.tab==='dashboard') drawChart();
+    });
+  });
+
+  // Workout UI
+  const workoutDays = document.getElementById('workoutDays');
+  Object.entries(workoutPlan).forEach(([day, plan], idx)=>{
+    const wrap = document.createElement('div');
+    wrap.className = 'workout-day' + (idx===0?' active':'');
+    wrap.dataset.day = day;
+    let body = `<h3>${plan.title}</h3><div class="pill">${plan.cardio}</div>`;
+    if(plan.exercises.length){
+      body += `<div class="scroll" style="margin-top:12px"><table class="workout-table"><thead><tr>
+        <th>Exercise</th><th>Target</th><th>Weight (kg)</th><th>Actual reps</th><th>Notes</th><th></th>
+      </tr></thead><tbody>`;
+      plan.exercises.forEach((ex,i)=>{
+        const key = `${day}_${i}`;
+        const saved = state.lifts[key] || {};
+        body += `<tr>
+          <td><span class="exercise-name">${escapeHTML(ex[0])}</span><span class="exercise-note">${escapeHTML(ex[3])}</span></td>
+          <td>${escapeHTML(ex[1])} × ${escapeHTML(ex[2])}</td>
+          <td><input type="number" step="0.5" min="0" max="500" data-lift-weight="${key}" value="${escapeHTML(saved.weight ?? '')}" placeholder="kg"></td>
+          <td><input type="text" data-lift-reps="${key}" value="${escapeHTML(saved.reps ?? '')}" placeholder="e.g. 8,8,7,6"></td>
+          <td><input type="text" data-lift-note="${key}" value="${escapeHTML(saved.note ?? '')}" placeholder="optional"></td>
+          <td><button class="btn secondary save-lift" type="button" data-key="${key}">Save</button></td>
+        </tr>`;
+      });
+      body += `</tbody></table></div>`;
+    } else {
+      body += `<div class="success" style="margin-top:14px">No lifting to log today. Focus on recovery and your step/cardio target.</div>`;
+    }
+    wrap.innerHTML = body;
+    workoutDays.appendChild(wrap);
+  });
+  document.querySelectorAll('.subtab-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.workout-day').forEach(d=>d.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`.workout-day[data-day="${btn.dataset.day}"]`).classList.add('active');
+    });
+  });
+  document.querySelectorAll('.save-lift').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const key = btn.dataset.key;
+      const weightEl = document.querySelector(`[data-lift-weight="${key}"]`);
+      const repsEl = document.querySelector(`[data-lift-reps="${key}"]`);
+      const noteEl = document.querySelector(`[data-lift-note="${key}"]`);
+      let weight = weightEl.value === '' ? '' : Math.max(0, Math.min(500, Number(weightEl.value)));
+      if(weight !== '' && !Number.isFinite(weight)) weight = '';
+      state.lifts[key] = {weight, reps:repsEl.value.trim().slice(0,40), note:noteEl.value.trim().slice(0,100), updated:new Date().toISOString()};
+      save();
+      const old = btn.textContent;
+      btn.textContent = 'Saved';
+      setTimeout(()=>btn.textContent=old,900);
+    });
+  });
+
+  // Meal plan
+  document.getElementById('mealPlan').innerHTML = meals.map(x=>`
+    <div class="meal-day">
+      <div class="meal-title"><h3>${x.d}</h3><span class="pill">12:00–20:00 eating window</span></div>
+      <div class="meal-grid">
+        <div class="meal"><b>12:00 — Meal 1</b><span class="small muted">${x.m1}</span></div>
+        <div class="meal"><b>16:00 — Snack</b><span class="small muted">${x.snack}</span></div>
+        <div class="meal"><b>19:00 — Meal 2</b><span class="small muted">${x.m2}</span></div>
+      </div>
+    </div>`).join('');
+
+  // Groceries
+  document.querySelectorAll('.grocery-list').forEach(container=>{
+    const list = container.dataset.list;
+    container.innerHTML = groceries[list].map((item,i)=>{
+      const key = `${list}_${i}`;
+      const checked = state.groceries[key] ? 'checked' : '';
+      return `<label class="check"><input type="checkbox" data-grocery="${key}" ${checked}><span>${escapeHTML(item)}</span></label>`;
+    }).join('');
+  });
+  document.addEventListener('change',e=>{
+    if(e.target.matches('[data-grocery]')){
+      state.groceries[e.target.dataset.grocery] = e.target.checked;
+      save();
+    }
+  });
+
+  // Daily checks (date-specific)
+  const today = new Date().toISOString().slice(0,10);
+  document.querySelectorAll('[data-daily]').forEach(el=>{
+    const key = `${today}_${el.dataset.daily}`;
+    el.checked = !!state.daily[key];
+    el.addEventListener('change',()=>{
+      state.daily[key] = el.checked;
+      save();
+    });
+  });
+
+  // Progress
+  const progressForm = document.getElementById('progressForm');
+  document.getElementById('progressDate').value = today;
+  document.getElementById('bodyWeight').value = '';
+  progressForm.addEventListener('submit',e=>{
+    e.preventDefault();
+    const date = document.getElementById('progressDate').value;
+    const weight = Number(document.getElementById('bodyWeight').value);
+    const waistRaw = document.getElementById('waist').value;
+    const stepsRaw = document.getElementById('steps').value;
+    const waist = waistRaw==='' ? null : Number(waistRaw);
+    const steps = stepsRaw==='' ? null : Number(stepsRaw);
+    if(!date || !Number.isFinite(weight) || weight<40 || weight>200) return;
+    const entry = {
+      date,
+      weight:Number(weight.toFixed(1)),
+      waist:Number.isFinite(waist) ? Number(Math.max(50,Math.min(180,waist)).toFixed(1)) : null,
+      steps:Number.isFinite(steps) ? Math.round(Math.max(0,Math.min(100000,steps))) : null
+    };
+    const existing = state.progress.findIndex(x=>x.date===date);
+    if(existing>=0) state.progress[existing]=entry; else state.progress.push(entry);
+    state.progress.sort((a,b)=>a.date.localeCompare(b.date));
+    save();
+    renderProgressRows();
+    drawChart();
+    progressForm.reset();
+    document.getElementById('progressDate').value = today;
+  });
+
+  function renderProgressRows(){
+    const body = document.getElementById('progressRows');
+    const rows = [...state.progress].sort((a,b)=>b.date.localeCompare(a.date));
+    body.innerHTML = rows.length ? rows.map(x=>`<tr>
+      <td>${escapeHTML(x.date)}</td>
+      <td>${x.weight.toFixed(1)} kg</td>
+      <td>${x.waist==null?'—':x.waist.toFixed(1)+' cm'}</td>
+      <td>${x.steps==null?'—':x.steps.toLocaleString()}</td>
+      <td><button class="btn danger delete-progress" type="button" data-date="${escapeHTML(x.date)}">Delete</button></td>
+    </tr>`).join('') : `<tr><td colspan="5" class="muted">No entries yet.</td></tr>`;
+    document.querySelectorAll('.delete-progress').forEach(btn=>btn.addEventListener('click',()=>{
+      state.progress = state.progress.filter(x=>x.date!==btn.dataset.date);
+      save();renderProgressRows();drawChart();
+    }));
+  }
+
+  function getWeekNumber(){
+    const start = new Date(state.startDate+'T00:00:00');
+    const now = new Date();
+    const diff = Math.max(0, now-start);
+    return Math.floor(diff/(7*86400000))+1;
+  }
+  function stepTargetForWeek(w){
+    if(w<=1) return 6000;
+    if(w===2) return 7000;
+    if(w===3) return 8000;
+    return 10000;
+  }
+  function refreshDashboard(){
+    const sorted = [...state.progress].sort((a,b)=>a.date.localeCompare(b.date));
+    const latest = sorted.length ? sorted[sorted.length-1] : null;
+    const latestWeight = latest ? latest.weight : START_WEIGHT;
+    document.getElementById('latestWeight').textContent = latestWeight.toFixed(1)+' kg';
+    const delta = latestWeight - START_WEIGHT;
+    document.getElementById('weightChange').textContent = delta===0 ? 'Start' : `${delta>0?'+':''}${delta.toFixed(1)} kg`;
+    const pct = Math.max(0,Math.min(100,((START_WEIGHT-latestWeight)/(START_WEIGHT-TARGET_WEIGHT))*100));
+    document.getElementById('weightProgress').style.width = pct+'%';
+    const latestWaistEntry = [...sorted].reverse().find(x=>x.waist!=null);
+    document.getElementById('latestWaist').textContent = latestWaistEntry ? latestWaistEntry.waist.toFixed(1)+' cm' : '—';
+    const week = getWeekNumber();
+    document.getElementById('weekPill').textContent = 'Week '+week;
+    document.getElementById('stepTargetText').textContent = stepTargetForWeek(week).toLocaleString();
+  }
+
+  function drawChart(){
+    const canvas = document.getElementById('weightChart');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(300,Math.floor(rect.width));
+    const h = Math.max(220,Math.floor(rect.height));
+    canvas.width = w*dpr; canvas.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);
+    const data = state.progress.length ? state.progress : [{date:today,weight:START_WEIGHT}];
+    const pad = {l:44,r:16,t:20,b:34};
+    const vals = data.map(x=>x.weight);
+    const minY = Math.min(TARGET_WEIGHT-1, ...vals)-0.5;
+    const maxY = Math.max(START_WEIGHT+1, ...vals)+0.5;
+    const x = i => pad.l + (data.length===1 ? (w-pad.l-pad.r)/2 : i*(w-pad.l-pad.r)/(data.length-1));
+    const y = v => pad.t + (maxY-v)*(h-pad.t-pad.b)/(maxY-minY);
+
+    ctx.strokeStyle='#243247';ctx.lineWidth=1;
+    ctx.fillStyle='#94a3b8';ctx.font='12px system-ui';
+    for(let i=0;i<5;i++){
+      const v=minY+(maxY-minY)*i/4, yy=y(v);
+      ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke();
+      ctx.fillText(v.toFixed(1),4,yy+4);
+    }
+    // target line
+    ctx.strokeStyle='#22c55e';ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.l,y(TARGET_WEIGHT));ctx.lineTo(w-pad.r,y(TARGET_WEIGHT));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#86efac';ctx.fillText('75 kg target',w-92,Math.max(14,y(TARGET_WEIGHT)-6));
+
+    ctx.strokeStyle='#38bdf8';ctx.lineWidth=3;ctx.beginPath();
+    data.forEach((p,i)=>{ const xx=x(i),yy=y(p.weight); i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy);});
+    ctx.stroke();
+    data.forEach((p,i)=>{ctx.fillStyle='#e2e8f0';ctx.beginPath();ctx.arc(x(i),y(p.weight),4,0,Math.PI*2);ctx.fill();});
+    const labels = data.length<=4 ? data : [data[0],data[Math.floor((data.length-1)/2)],data[data.length-1]];
+    ctx.fillStyle='#94a3b8';
+    labels.forEach(p=>{
+      const i=data.indexOf(p);
+      const txt=p.date.slice(5);
+      ctx.fillText(txt,Math.max(0,Math.min(w-40,x(i)-16)),h-10);
+    });
+  }
+
+  // Export/import/reset
+  document.getElementById('exportBtn').addEventListener('click',()=>{
+    const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url;a.download='lean-cut-tracker-backup.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+  document.getElementById('importFile').addEventListener('change',async e=>{
+    const file=e.target.files && e.target.files[0]; if(!file) return;
+    try{
+      const parsed=JSON.parse(await file.text());
+      if(!parsed || typeof parsed!=='object') throw new Error('Invalid');
+      state={...defaultState(),...parsed};
+      save();
+      location.reload();
+    }catch(err){ alert('Could not import that backup file.'); }
+  });
+  document.getElementById('resetBtn').addEventListener('click',()=>{
+    if(confirm('Reset all tracker data stored in this browser?')){
+      state=defaultState();save();location.reload();
+    }
+  });
+
+  renderProgressRows();
+  refreshDashboard();
+  requestAnimationFrame(drawChart);
+  window.addEventListener('resize',()=>requestAnimationFrame(drawChart));
+})();
+</script>
+</body>
+</html>
